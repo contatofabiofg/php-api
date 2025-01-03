@@ -2,48 +2,43 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Usuario;
 use App\Services\UsuariosService;
 use Illuminate\Http\Request;
 
 class UsuarioController extends Controller
 {
-    // Listar todos os usuários
-    public function getAll() {
-        $usuariosService = new UsuariosService();
+    protected $usuariosService;
 
-        return Usuario::all();
+    public function __construct(UsuariosService $usuariosService)
+    {
+        $this->usuariosService = $usuariosService;
     }
 
-    // Criar um novo usuário
-    public function store(Request $request) {
-        $usuario = Usuario::create([
-            'nome' => $request->input('nome'),
-            'email' => $request->input('email'),
-            'senha' => bcrypt($request->input('senha'))
-        ]);
+    public function getAll()
+    {
+        return response()->json($this->usuariosService->getAll());
+    }
 
+    public function getPorId($id)
+    {
+               return response()->json($this->usuariosService->getPorId($id), 201);
+    }
+
+    public function post(Request $request)
+    {
+
+        $usuario = $this->usuariosService->post($request);
         return response()->json($usuario, 201);
     }
 
-    // Buscar um usuário pelo ID
-    public function show($id) {
-        return Usuario::findOrFail($id);
+    public function update(Request $request, $id)
+    {
+        $usuario = $this->usuariosService->update($request, $id);
+        return response()->json($usuario, 201);
     }
 
-    // Atualizar um usuário
-    public function update(Request $request, $id) {
-        $usuario = Usuario::findOrFail($id);
-        $usuario->update($request->all());
-
-        return response()->json($usuario, 200);
-    }
-
-    // Excluir um usuário
-    public function destroy($id) {
-        Usuario::destroy($id);
-
-        return response()->json(null, 204);
+    public function delete($id)
+    {
+        return response()->json($this->usuariosService->delete($id), 201);
     }
 }
-

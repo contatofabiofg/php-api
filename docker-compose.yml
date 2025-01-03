@@ -1,0 +1,51 @@
+networks: 
+  php_api:
+    name: php_api
+
+services:
+  php-apache: 
+    image: webdevops/php-apache-dev:8.3-alpine
+    container_name: api_php_back
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/app
+    environment:
+      WEB_DOCUMENT_ROOT: /app/public
+    depends_on:
+      - postgresql-php
+    networks:
+      php_api:
+        aliases:
+          - api_php_back
+  
+  postgresql-php: 
+    image: postgres:${POSTGRESQL_VERSION}
+    container_name: postgresql-php
+    restart: always
+    ports:
+      - "5431:5432"
+    volumes:
+      - ./postgresql/scripts:/docker-entrypoint-initdb.d/
+      - ./postgresql/data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: phpdb
+    networks:
+      php_api:
+        aliases:
+          - postgresql
+
+  portainer-php:
+    image: portainer/portainer
+    container_name: portainer-php
+    command: -H unix:///var/run/docker.sock
+    restart: always
+    ports:
+      - 9000:9000
+      - 8000:8000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./portainer_data:/data
